@@ -6,6 +6,7 @@
   "scripts": {
     "start": "mix",
     "watch": "mix watch"
+    "prod" : "mix --production" 
   },
   "repository": {
     "type": "git",
