@@ -56,15 +56,20 @@ function isEndDevider(prop) {
 let queue = [];
 
 for (let property of database) {
-  const isStart = isStartDevider(property);
-  const isEnd = isEndDevider(property);
-  console.log(isStart);
-
   for (let isStartProperty in property) {
+    const isStart = isStartDevider(property);
+    const isEnd = isEndDevider(property);   
     if(isStart){
         const {id} = findId(isStartProperty, "__");
-        console.log(id);
+        queue.push(id);
     }
+    if(isEnd){
+        const {id} = findId(isStartProperty, "_#");
+        const indx = queue.indexOf(id);
+        queue.splice(indx);
+    }
+    
   }
+  
 }
-console.log(queue);
+
