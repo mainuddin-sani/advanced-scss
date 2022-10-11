@@ -1,75 +1,87 @@
 // write your code
-
-import database from "./json/exam-databse.json";
-
+import database from './json/exam-databse.json';
 function findId(prop, type) {
-  const orginalId = prop.split(type)[1];
-  if (type === "__") {
-    return {
-      id: orginalId,
-      start: prop,
-      end: "_#" + orginalId,
-    };
-  } else {
-    return {
-      id: orginalId,
-      end: prop,
-      start: "__" + orginalId,
-    };
-  }
-}
-
-function isString(prop) {
-  return typeof prop === "string";
-}
-
-function isStartDevider(prop) {
-  let result = false;
-  for (let obj in prop) {
-    if (isString(obj) && obj.startsWith("__")) {
-      const { id, end } = findId(obj, "__");
-      if (Reflect.has(prop, end) && !Reflect.has(prop, id)) {
-        result = true;
-      } else {
-        console.warn("Someting is wrong " + obj);
-      }
-    }
-  }
-  return result;
-}
-
-function isEndDevider(prop) {
-  let result = false;
-  for (let obj in prop) {
-    if (isString(obj) && obj.startsWith("_#")) {
-      const { id, start } = findId(obj, "_#");
-      if (Reflect.has(prop, start) && !Reflect.has(prop, id)) {
-        result = true;
-      } else {
-        console.warn("Someting is wrong " + obj);
-      }
-    }
-  }
-  return result;
-}
-
-let queue = [];
-
-for (let property of database) {
-  for (let isStartProperty in property) {
-    const isStart = isStartDevider(property);
-    const isEnd = isEndDevider(property);   
-    if(isStart){
-        const {id} = findId(isStartProperty, "__");
-        queue.push(id);
-    }
-    if(isEnd){
-        const {id} = findId(isStartProperty, "_#");
-        const indx = queue.indexOf(id);
-        queue.splice(indx);
+    const orginalId = prop.split(type)[1];
+    if(type === '__'){
+        return {
+            id: orginalId,
+            start: prop,
+            end: '_#' + orginalId
+        }
+    }else {
+        return {
+            id: orginalId,
+            end: prop,
+            start: '__' + orginalId
+        }
     }
     
-  }
-  
 }
 
+
+// isStart 
+function isStartDivider(prop) {
+    let result = false;
+    if(typeof prop === 'string' && prop.startsWith('__')){
+        result = true;
+        for (const obj of database) {
+            const {id, end} = findId(prop, '__');
+            if(obj.hasOwnProperty(end) && !obj.hasOwnProperty(id)){
+                result = true;
+            }
+        }
+    }
+   return result;
+    
+}
+
+function isEndDivider(prop) {
+    let result = false;
+    if(typeof prop === 'string' && prop.startsWith('_#')){
+        result = true;
+        for (const obj of database) {
+            const {id, start} = findId(prop, '_#');
+            if(obj.hasOwnProperty(start) && !obj.hasOwnProperty(id)){
+                result = true;
+            }
+        }
+    }
+    return result;
+}
+
+// queue
+
+const queue = [];
+const data = {};
+
+// database element loop
+for (let obj of database) {
+    for (let property in obj) {
+        const isStart = isStartDivider(property);
+        const isEnd = isEndDivider(property);
+        let canUse = true;
+        if(isStart){
+            const {id} = findId(property, '__');
+            queue.push(id);
+            canUse = false;
+        }
+        if(isEnd){
+            const {id} = findId(property, '_#');
+            const indexID = queue.indexOf(id);
+            queue.splice(indexID, 1)
+            canUse = false;
+        }
+        let endpoint = data;
+        
+        for(let scope of queue){
+            if(!Reflect.has(endpoint, scope)){
+                endpoint[scope] = {};
+            }
+            endpoint = endpoint[scope];
+        }
+        if(canUse){
+            endpoint[property] = obj[property];
+        }
+    }
+}
+console.log(data);
